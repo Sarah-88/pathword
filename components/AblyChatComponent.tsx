@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useChannel } from "./AblyReactEffect";
 import styles from './AblyChatComponent.module.css';
+import { Types } from 'ably';
 
 const AblyChatComponent = () => {
 
@@ -10,7 +11,7 @@ const AblyChatComponent = () => {
   const [receivedMessages, setMessages] = useState<Array<{connectionId: string, data: string}>>([]);
   const messageTextIsEmpty = messageText.trim().length === 0;
 
-  const [channel, ably] = useChannel("chat-demo", (message: {connectionId: string, data: string}) => {
+  const {channel, ably} = useChannel("chat-demo", (message: {connectionId: string, data: string}) => {
     // Here we're computing the state that'll be drawn into the message history
     // We do that by slicing the last 199 messages from the receivedMessages buffer
 
