@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DialogObject, getDialog } from '../lib/utils';
 import { DialogProps, ReduxState } from '../lib/types';
 import Dialog from './Dialog';
@@ -9,7 +9,7 @@ type PathType = {
     gameId: string,
     showSpinner: (show: boolean) => void,
     isReady: (ready: boolean) => void,
-    backToHome: () => void
+    backToHome: () => void,
 }
 
 const PathArea = (props: PathType) => {
@@ -20,14 +20,15 @@ const PathArea = (props: PathType) => {
     const [dialog, setDialog] = useState<{ text: string, buttons: DialogProps['buttons'] }>({ text: '', buttons: [] })
     const [openPuzzle, setOpenPuzzle] = useState(false)
     const [hasError, setError] = useState('')
+    const { isReady, backToHome, gameId, showSpinner } = props
 
-    const formatButtons = (buttons: DialogObject['buttons'], extraParams?: { [key: string]: string }) => {
+    const formatButtons = useCallback((buttons: DialogObject['buttons'], extraParams?: { [key: string]: string }) => {
         return buttons.map((b) => {
             let toReturn: { text: string, reqInput?: number, callback: (val?: string) => void } = { text: b.text, callback: () => { } }
             switch (b.type) {
                 case 'back':
                     toReturn['callback'] = () => {
-                        props.isReady(false)
+                        isReady(false)
                         setTimeout(() => {
                             if (game.progress - 1 === 0) {
                                 dispatch(setGameProgress({ stage: 'path', path: '' }))
@@ -44,14 +45,9 @@ const PathArea = (props: PathType) => {
                     break
                 case 'forward':
                     toReturn['callback'] = () => {
-                        props.isReady(false)
+                        isReady(false)
                         setTimeout(() => {
-                            // if (extraParams?.puzzleId && game.solved?[extraParams?.puzzleId]) {
-                            //     let tmp = getDialog(`noPuzzle`)
-                            //     setDialog({ ...tmp, buttons: formatButtons(tmp.buttons) })
-                            //     console.log('setting new dialog')
-                            // }
-                            if (game.path && game.puzzles && game.puzzles[game.path].length <= game.progress) {
+                            if (game.puzzles[game.path].length <= game.progress) {
                                 dispatch(setGameProgress({ stage: 'final' }))
                             } else {
                                 dispatch(setGameProgress({ progress: game.progress + 1 }))
@@ -68,8 +64,8 @@ const PathArea = (props: PathType) => {
                         if (!val || !extraParams?.puzzleId || val.length < extraParams?.display.length) {
                             return
                         }
-                        props.showSpinner(true)
-                        await fetch('/api/game/' + props.gameId, { method: 'POST', body: JSON.stringify({ answer: val, puzzleId: extraParams.puzzleId, playerId: player.id, playerName: player.name, team: game.team, room: 'checkAnswer' }) })
+                        showSpinner(true)
+                        await fetch('/api/game/' + gameId, { method: 'POST', body: JSON.stringify({ answer: val, puzzleId: extraParams.puzzleId, playerId: player.id, playerName: player.name, team: game.team, room: 'checkAnswer' }) })
                             .then(response => response.json())
                             .then(resp => {
                                 if (resp?.data?.correct) {
@@ -87,60 +83,63 @@ const PathArea = (props: PathType) => {
                                     }, 5000)
                                 }
                             }).finally(() => {
-                                props.showSpinner(false)
+                                showSpinner(false)
                             })
                     }
                     break
             }
             return toReturn
         })
-    }
+    }, [gameId, player, isReady, dispatch, game.path])
 
-    useEffect(() => {
-        const pzId = game.puzzles[game.path][game.progress - 1].puzzleId
-        if (game.solved && game.solved[pzId] !== player.id) {
-            setOpenPuzzle(false)
-            console.log('call others done?', game.solved)
-            let tmp = getDialog(`otherFinished`)
-            setDialog({ ...tmp, buttons: formatButtons(tmp.buttons, { puzzleId: pzId }) })
-        }
-    }, [game.solved, player, game.puzzles])
-
-    useEffect(() => {
-        if (props.gameId && !puzzle) {
-            const pzId = game.puzzles[game.path][game.progress - 1].puzzleId
-            if (game.solved && game.solved[pzId]) {
+    const firstLoad = useCallback(() => {
+        const puzzleId = game.puzzles[game.path][game.progress - 1].puzzleId
+        if (gameId && puzzleId) {
+            if (game.solved && game.solved[puzzleId]) {
                 let tmp = getDialog(`noPuzzle`)
                 setDialog({ ...tmp, buttons: formatButtons(tmp.buttons) })
-                props.isReady(true)
+                setPuzzle({ id: puzzleId, solved: true, hint: '', display: '', required: false, type: '', lettersAvailable: [], buttons: [] })
+                isReady(true)
                 return
             }
-            fetch('/api/game/' + props.gameId, { body: JSON.stringify({ room: 'singlePath', puzzleId: pzId }), method: 'POST' })
+            fetch('/api/game/' + gameId, { body: JSON.stringify({ room: 'singlePath', puzzleId: puzzleId }), method: 'POST' })
                 .then(response => response.json())
                 .then((resp) => {
                     if (resp?.data?.solved) {
                         let tmp = getDialog(`noPuzzle`)
                         setDialog({ ...tmp, buttons: formatButtons(tmp.buttons) })
-                        dispatch(addSolved({ [pzId]: 'unknown' }))
+                        dispatch(addSolved({ [puzzleId]: 'unknown' }))
                     } else if (resp?.data) {
                         setPuzzle({
                             ...resp.data,
-                            id: pzId,
+                            id: puzzleId,
                             solved: false,
-                            buttons: formatButtons([{ type: 'cancel', text: 'Cancel' }, { type: 'submit', text: 'Submit' }], { ...resp.data, puzzleId: pzId })
+                            buttons: formatButtons([{ type: 'cancel', text: 'Cancel' }, { type: 'submit', text: 'Submit' }], { ...resp.data, puzzleId: puzzleId })
                         })
                         let tmp = getDialog(`puzzle${resp.data.required ? 'Req' : 'Opt'}`)
                         setDialog({ ...tmp, buttons: formatButtons(tmp.buttons) })
                     } else {
-                        props.backToHome()
+                        backToHome()
                     }
                 }).catch(e => {
-                    props.backToHome()
+                    backToHome()
                 }).finally(() => {
-                    props.isReady(true)
+                    isReady(true)
                 })
         }
-    }, []);
+    }, [gameId, game.path, game.progress, dispatch])
+
+    useEffect(() => {
+        if (game.solved && game.solved[puzzle?.id!] && game.solved[puzzle?.id!] !== player.id) {
+            setOpenPuzzle(false)
+            let tmp = getDialog(`otherFinished`)
+            setDialog({ ...tmp, buttons: formatButtons(tmp.buttons, { puzzleId: puzzle?.id! }) })
+        }
+    }, [game.solved, player])
+
+    useEffect(() => {
+        firstLoad()
+    }, [firstLoad]);
 
     return (
         <div className="text-center">

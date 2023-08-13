@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import PathLobby from '../../components/PathLobby';
 import PathArea from '../../components/PathArea';
 import { useDispatch, useSelector } from 'react-redux'
@@ -9,6 +9,7 @@ import FinalArea from '../../components/FinalArea';
 import { Spinner } from '../../components/Spinner';
 import Results from '../../components/Results';
 import { resetGame, setGameProgress } from '../../redux/reducers/gameSlice';
+import Head from 'next/head';
 
 const TeamLobby = dynamic(() => import('../../components/TeamLobby'), { ssr: false });
 const GlobalChatComponent = dynamic(() => import('../../components/GlobalChatComponent'), { ssr: false })
@@ -39,15 +40,19 @@ const Paths = () => {
     const [showSpinner, setShowSpinner] = useState(false)
     const area = useMemo(() => {
         return formatArea(game.stage, game.path, game.progress)
-    }, [game.stage, game.progress])
-    const endGame = () => {
+    }, [game.stage, game.progress, game.path])
+    const endGame = useCallback(() => {
         setIsReady(false)
         setTimeout(() => {
             dispatch(setGameProgress({ stage: 'results' }))
         }, 500)
-    }
+    }, [dispatch])
 
-    const getScreen = (stage?: string) => {
+    const backToHome = useCallback(() => {
+        dispatch(resetGame())
+    }, [dispatch])
+
+    const getScreen = useCallback((stage?: string) => {
         switch (stage) {
             case "lobby":
                 return <TeamLobby gameId={router.query.id as string} isReady={setIsReady} showSpinner={setShowSpinner} backToHome={backToHome} />
@@ -62,21 +67,22 @@ const Paths = () => {
             default:
                 return <></>
         }
-    }
-
-    const backToHome = () => {
-        dispatch(resetGame())
-    }
+    }, [router.query.id, backToHome, game.path, game.progress])
 
     useEffect(() => {
         if (!player || !player.id || !game.gameId) {
             router.push('/')
         }
-    }, [router.query?.id, game])
+    }, [router.query?.id, game.gameId, player, router])
 
     if (router.query.id?.length === 8) {
         return (
             <>
+                <Head>
+                    <title>Pathword - #{game.gameId}</title>
+                    <meta name="description" content="Enter the correct password game" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                </Head>
                 <main className={`${['pathway', 'final', 'path'].includes(game.stage) ? 'pt-8' : ''}`}>
                     {getScreen(game.stage)}
                     {['pathway', 'final', 'path'].includes(game.stage) &&

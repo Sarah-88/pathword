@@ -105,7 +105,6 @@ export default async function handler(
                                 });
                             }
                         }
-                        console.log('ans', currPuzzle.answer, reqBody.answer)
                         res.status(200).json({ message: correct ? 'Correct answer!' : 'Incorrect answer!', data: { correct, hasClue: !!currPuzzle.clue } })
                         return
                     }

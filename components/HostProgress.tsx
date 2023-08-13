@@ -1,5 +1,5 @@
 import { Baloo_2, Luckiest_Guy, Macondo } from 'next/font/google'
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GameType, DialogProps, ChatData, PlayerLoc } from '../lib/types';
 import { useSelector } from 'react-redux';
 import { useChannel } from './AblyReactEffect';
@@ -23,8 +23,7 @@ const HostProgress = (props: HostProgressProps) => {
     const [playerFail, setPlayerFail] = useState<string[]>([])
     const messageEnd = useRef<HTMLDivElement>(null)
     const inputBox = useRef<HTMLTextAreaElement>(null)
-    const receiveNotification = (type: string, msg: ChatData) => {
-        console.log('notification received', msg)
+    const receiveNotification = useCallback((type: string, msg: ChatData) => {
         switch (type) {
             case 'enter':
                 setPlayerLoc((state) => {
@@ -37,10 +36,10 @@ const HostProgress = (props: HostProgressProps) => {
                 }, 10000)
                 break
             case 'fail-password':
-                setPlayerFail([...playerFail, msg.id])
+                setPlayerFail((state) => [...state, msg.id])
                 break
         }
-    }
+    }, [props.setEnd])
 
     const { channel } = useChannel(`chat-${props.gameId}-${props.team}`, (message: { name: string, data: ChatData }) => {
         setMessages((state) => {
@@ -57,26 +56,25 @@ const HostProgress = (props: HostProgressProps) => {
         }
     });
 
-    const sendChatMessage = (messageText: string) => {
+    const sendChatMessage = useCallback((messageText: string) => {
         channel.publish({ name: `chat`, data: { author: 'Game Host', id: 'Host', text: messageText, area: { name: 'HostRoom', display: 'Host\s Domain' } } });
         setTypedMsg('');
         if (inputBox) {
             inputBox.current?.focus();
         }
-    }
+    }, [inputBox, channel])
 
-    const handleKeyPress = (event: React.KeyboardEvent) => {
+    const handleKeyPress = useCallback((event: React.KeyboardEvent) => {
         if (event.code !== 'Enter' || typedMsg.trim().length === 0) {
             return;
         }
         sendChatMessage(typedMsg);
         event.preventDefault();
-    }
+    }, [sendChatMessage, typedMsg])
 
     useEffect(() => {
         setPlayerLoc(props.playerLoc)
-        console.log('changed player loc', props.playerLoc)
-    }, [props.playerLoc])
+    }, [props.playerLoc, setPlayerLoc])
 
     return (
         <>

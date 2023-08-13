@@ -1,4 +1,4 @@
-import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react"
+import React, { ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react"
 import { letterList } from "../lib/utils"
 import { Baloo_2, Caveat, Macondo } from "next/font/google"
 import { useSelector } from "react-redux"
@@ -45,7 +45,7 @@ const findSelected = (toDisplay: string[][]) => {
     return `${outerIndex}-${innerIndex}`
 }
 
-export const Puzzle = forwardRef((props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
+const PuzzleCom = (props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
     const [letters, setLetters] = useState(getLetters(props.availableLetters))
     const toDisplay = useMemo(() => props.textDisplay.split(' ').map(td => td.split('')), [props.textDisplay])
     const [selected, setSelected] = useState(findSelected(toDisplay))
@@ -53,7 +53,7 @@ export const Puzzle = forwardRef((props: PuzzleProps, ref: ForwardedRef<PuzzleRe
     const [inputAnswer, setInputAnswer] = useState('')
     const clueList = useSelector((state: ReduxState) => state.game.clues)
 
-    const selectAnswer = (letter: string) => {
+    const selectAnswer = useCallback((letter: string) => {
         setAnswer((state) => {
             if (!letter) {
                 const copy = { ...state }
@@ -95,16 +95,16 @@ export const Puzzle = forwardRef((props: PuzzleProps, ref: ForwardedRef<PuzzleRe
             }
             return nextIdx
         })
-    }
+    }, [props.setReady, props.textDisplay, selected, toDisplay])
 
-    const typeAnswer = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const typeAnswer = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (props.setReady) {
             setTimeout(() => {
                 props.setReady && props.setReady(e.target.value.length >= props.textDisplay.length)
             }, 10)
         }
         setInputAnswer(e.target.value)
-    }
+    }, [props.setReady, props.textDisplay])
 
     useImperativeHandle(ref, () => {
         return {
@@ -125,7 +125,7 @@ export const Puzzle = forwardRef((props: PuzzleProps, ref: ForwardedRef<PuzzleRe
                 }
             }
         }
-    }, [letters, answer, inputAnswer, props.textDisplay])
+    }, [answer, inputAnswer, props.textDisplay, toDisplay])
 
     useEffect(() => {
         setLetters(getLetters(props.availableLetters))
@@ -203,4 +203,6 @@ export const Puzzle = forwardRef((props: PuzzleProps, ref: ForwardedRef<PuzzleRe
             </div>
         }
     </>
-})
+}
+
+export const Puzzle = forwardRef(PuzzleCom)

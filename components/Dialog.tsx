@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Baloo_2, Luckiest_Guy, Macondo } from 'next/font/google'
 import { Puzzle, PuzzleRef } from "./Puzzle";
 import { DialogProps } from "../lib/types";
+import Image from "next/image";
 
 const baloo = Baloo_2({ subsets: ['latin'] })
 const lucky = Luckiest_Guy({ subsets: ['latin'], weight: "400" })
@@ -11,9 +12,9 @@ const Dialog = (props: DialogProps) => {
     const [inputVal, setInputVal] = useState(props.inputPrep ?? '');
     const [puzzleAnswerReady, setPuzzleAnswerReady] = useState(false)
     const puzzleRef = useRef<PuzzleRef>(null)
-    const handleContextMenu = (e: React.MouseEvent<HTMLImageElement>) => {
+    const handleContextMenu = useCallback((e: React.MouseEvent<HTMLImageElement>) => {
         e.preventDefault()
-    }
+    }, [])
     useEffect(() => {
         if (props.inputPrep !== undefined) {
             setInputVal(props.inputPrep)
@@ -23,7 +24,7 @@ const Dialog = (props: DialogProps) => {
         <div className={`fixed w-screen h-screen flex justify-center items-center z-40 top-0 left-0 transition-all ${props.visible ? (props.backdropType === 'blur' ? 'backdrop-blur' : props.backdropType === 'black' ? 'bg-black/70' : '') : 'pointer-events-none'}`}>
             <div className={`relative ${props.large ? 'w-full max-w-3xl' : 'min-w-[320px] max-w-lg'} shadow-box p-3 rounded-lg bg-yellow-50 text-center pb-12 transition-all ${props.visible ? 'top-0 opacity-100' : '-top-10 opacity-0 pointer-events-none'}`}>
                 {props.title && <h3 className={`text-black text-2xl mb-3 ${macondo.className}`}>{props.title}</h3>}
-                {props.imageDisplay && <div className="m-auto mb-3 max-w-xs text-center"><img onContextMenu={handleContextMenu} src={props.imageDisplay} className="max-w-full" alt="Puzzle Image" /></div>}
+                {props.imageDisplay && <div className="m-auto mb-3 max-w-xs text-center"><Image onContextMenu={handleContextMenu} src={props.imageDisplay} className="max-w-full" alt="Puzzle Image" /></div>}
                 {props.desc && <p className={`text-black text-xl whitespace-pre-wrap mb-3 select-none ${baloo.className}`}>{props.desc}</p>}
                 {props.subText && <p className={`text-black text-sm mb-3 ${baloo.className}`}>{props.subText}</p>}
                 {props.textDisplay && <Puzzle ref={puzzleRef} clues={props.getClues} setReady={setPuzzleAnswerReady} incorrect={!!props.inputError} textDisplay={props.textDisplay} availableLetters={props.availableLetters as string[]} />}

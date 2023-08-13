@@ -1,5 +1,5 @@
 import { Baloo_2, Luckiest_Guy, Macondo } from 'next/font/google'
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useChannel } from './AblyReactEffect';
 
 const baloo = Baloo_2({ subsets: ['latin'] })
@@ -8,51 +8,50 @@ const macondo = Macondo({ weight: "400", subsets: ['latin'] });
 
 type LobbyProps = {
     gameId: string,
-    list: { team: string, players: { name: string, score: number }[] }[],
+    list: { team: string, players: { id: string, name: string, score: number }[] }[],
     winner?: string,
     startGame?: () => void,
     isReady: (ready: boolean) => void,
     showSpinner: (show: boolean) => void,
+    removePlayer?: (id: string, name: string) => void
 }
 
 const HostLobby = (props: LobbyProps) => {
     const [teamlist, setTeamlist] = useState(props.list)
+    const { isReady, list, removePlayer } = props
 
-    if (!props.winner) {
-        useChannel(`lobby-${props.gameId}`, (message: { name: string, data: any }) => {
-            console.log('received message', message)
-            if (message.name === 'joined-team' || message.name === 'leave-room' || message.name === 'entered-lobby') {
-                setTeamlist((state) => {
-                    let processedPlayer = false
-                    return state.map((t) => {
-                        const playerList = [...t.players]
-                        if (t.team === message.data.team && message.name === 'joined-team') {
-                            processedPlayer = true
-                            playerList.push({ name: message.data.player, score: 0 })
-                        } else {
-                            const idx = t.players.findIndex(p => p.name === message.data.player)
-                            if (idx > -1 && message.name !== 'entered-lobby') {
-                                playerList.splice(idx, 1)
-                                processedPlayer = true
-                            }
+    useChannel(`lobby-${props.gameId}`, (message: { name: string, data: any }) => {
+        if (message.name === 'joined-team' || message.name === 'leave-room' || message.name === 'entered-lobby') {
+            setTeamlist((state) => {
+                let processed = false
+                return state.map((t) => {
+                    const playerList = [...t.players]
+                    if (t.team === message.data.team && message.name === 'joined-team') {
+                        playerList.push({ id: message.data.id, name: message.data.player, score: 0 })
+                        processed = true
+                    } else {
+                        const idx = t.players.findIndex(p => p.name === message.data.player)
+                        if (idx > -1 && message.name !== 'entered-lobby') {
+                            playerList.splice(idx, 1)
+                            processed = true
                         }
-                        if (t.team === 'noteam' && !processedPlayer) {
-                            const exists = playerList.find(p => p.name === message.data.player)
-                            if (!exists) {
-                                playerList.push({ name: message.data.player, score: 0 })
-                            }
+                    }
+                    if (t.team === 'noteam' && message.name === 'entered-lobby' && !processed) {
+                        const exists = playerList.find(p => p.name === message.data.player)
+                        if (!exists) {
+                            playerList.push({ id: message.data.id, name: message.data.player, score: 0 })
                         }
-                        return { ...t, players: playerList }
-                    })
+                    }
+                    return { ...t, players: playerList }
                 })
-            }
-        });
-    }
+            })
+        }
+    });
 
     useEffect(() => {
-        setTeamlist(props.list)
-        props.isReady(true)
-    }, [props.list])
+        setTeamlist(list)
+        isReady(true)
+    }, [list, isReady])
 
     return (
         <div className="text-center">
@@ -66,10 +65,12 @@ const HostLobby = (props: LobbyProps) => {
                     }>
                         <h3 className={`${macondo.className} text-3xl pb-2 cursor-default`}>{tl.team === 'noteam' ? 'Unassigned' : `Team ${tl.team.replace(/./, (a) => a.toUpperCase())}`}</h3>
                         <ul>
-                            {tl.players.map((tr, i) => <li key={`player-r-${i}`} className={`bg-white mb-1 p-1 pl-3 flex justify-between cursor-default pr-3 rounded-2xl text-gray-800 ${baloo.className}`}>
-                                {tr.name}
-                                {props.winner && <span>{tr.score}</span>}
-                            </li>)}
+                            {tl.players.map((tr, i) =>
+                                <li key={`player-r-${i}`} className={`bg-white relative mb-1 p-1 pl-3 flex justify-between cursor-default pr-3 rounded-2xl text-gray-800 ${baloo.className}`}>
+                                    {tr.name}
+                                    {props.winner && <span>{tr.score}</span>}
+                                    {removePlayer && <button type="button" onClick={() => removePlayer(tr.id, tr.name)} className="text-red-500 font-bold text-2xl absolute right-1 pl-2 pr-2 top-0">&times;</button>}
+                                </li>)}
                         </ul>
                     </div>
                 )}

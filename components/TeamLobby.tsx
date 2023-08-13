@@ -1,5 +1,5 @@
 import { Baloo_2, Luckiest_Guy, Macondo } from 'next/font/google'
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useChannel } from './AblyReactEffect';
 import { ReduxState } from '../lib/types';
 import { useDispatch, useSelector } from 'react-redux'
@@ -20,15 +20,17 @@ const TeamLobby = (props: LobbyProps) => {
     const dispatch = useDispatch()
     const { player, game } = useSelector((state: ReduxState) => ({ player: state.player, game: state.game }))
     const [teamlist, setTeamlist] = useState<Array<{ team: string, players: string[] }>>([])
+    const { isReady, backToHome, gameId } = props
 
-    const { channel, ably } = useChannel(`lobby-${props.gameId}`, (message: { name: string, data: any }) => {
-        console.log('received message', message)
+    const { channel } = useChannel(`lobby-${props.gameId}`, (message: { name: string, data: any }) => {
         if (message.name === 'joined-team' || message.name === 'leave-room') {
             setTeamlist((state) => {
                 return state.map((t) => {
                     const playerList = [...t.players]
                     if (t.team === message.data.team && message.name === 'joined-team') {
-                        playerList.push(message.data.player)
+                        if (!playerList.includes(message.data.player)) {
+                            playerList.push(message.data.player)
+                        }
                     } else {
                         const idx = t.players.findIndex(p => p === message.data.player)
                         if (idx > -1) {
@@ -43,29 +45,31 @@ const TeamLobby = (props: LobbyProps) => {
         }
     });
 
-    useEffect(() => {
-        const getPlayers = async () => await fetch('/api/game/' + props.gameId, { body: JSON.stringify({ room: 'lobby' }), method: 'POST' })
-            .then(response => response.json())
-            .then(resp => {
-                if (!resp.data) {
-                    props.backToHome()
-                    return
+    const getPlayers = useCallback(async () => await fetch('/api/game/' + gameId, { body: JSON.stringify({ room: 'lobby' }), method: 'POST' })
+        .then(response => response.json())
+        .then(resp => {
+            if (!resp.data) {
+                backToHome()
+                return
+            }
+            setTeamlist(resp.data)
+            channel.publish({
+                name: "entered-lobby",
+                data: {
+                    player: player.name
                 }
-                setTeamlist(resp.data)
-                channel.publish({
-                    name: "entered-lobby",
-                    data: {
-                        player: player.name
-                    }
-                });
-            }).catch(e => {
-                console.log(e)
-                props.backToHome()
-            }).finally(() => {
-                props.isReady(true)
-            })
+            });
+        }).catch(e => {
+            console.log(e)
+            backToHome()
+        }).finally(() => {
+            isReady(true)
+        })
+        , [backToHome, isReady, gameId, channel, player.name])
+
+    useEffect(() => {
         getPlayers()
-    }, [props.gameId]);
+    }, [getPlayers]);
 
     return (
         <div className="text-center">

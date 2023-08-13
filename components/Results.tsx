@@ -17,9 +17,10 @@ const Results = (props: ResultsType) => {
     const player = useSelector((state: ReduxState) => state.player)
     const [winner, setWinner] = useState('')
     const [results, setResults] = useState<{ team: string, players: { name: string, score: number }[] }[]>([])
+    const { gameId, isReady } = props
 
     useEffect(() => {
-        fetch('/api/game/' + props.gameId, { body: JSON.stringify({ room: 'results' }), method: 'POST' })
+        fetch('/api/game/' + gameId, { body: JSON.stringify({ room: 'results' }), method: 'POST' })
             .then(response => response.json())
             .then(resp => {
                 if (resp.data?.winner) {
@@ -27,9 +28,9 @@ const Results = (props: ResultsType) => {
                     setWinner(resp.data.winner)
                 }
             }).finally(() => {
-                props.isReady(true)
+                isReady(true)
             })
-    }, []);
+    }, [gameId, isReady]);
 
     return (
         <div className="text-center">

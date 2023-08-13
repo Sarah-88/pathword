@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useChannel } from "./AblyReactEffect";
 import { Baloo_2 } from 'next/font/google';
 import { ChatData, ReduxState } from '../lib/types';
@@ -19,8 +19,8 @@ const baloo = Baloo_2({ subsets: ['latin'] })
 const GlobalChatComponent = (props: ChatComponentProps) => {
     const game = useSelector((state: ReduxState) => state.game)
     const dispatch = useDispatch()
-    let inputBox: HTMLTextAreaElement | null = null;
-    let messageEnd = useRef<HTMLDivElement>(null);
+    const inputBox = useRef<HTMLTextAreaElement>(null)
+    const messageEnd = useRef<HTMLDivElement>(null);
     const [messageText, setMessageText] = useState("");
     const [receivedMessages, setMessages] = useState<ChatData[]>([]);
 
@@ -42,36 +42,34 @@ const GlobalChatComponent = (props: ChatComponentProps) => {
                 props.endGame && props.endGame()
             }, 10000)
         } else if (message.name === 'get-clue' && message.data.extra?.clue) {
-            console.log('adding clue', message.data.extra.clue)
             dispatch(addClue(message.data.extra?.clue))
         } else if (message.name === 'enter' && message.data.extra?.solved) {
             if (game.solved && Object.keys(game.solved).length < Object.keys(message.data.extra.solved).length) {
-                console.log('adding solved', message.data.extra.solved)
                 dispatch(setSolved(message.data.extra.solved))
             }
         }
     });
 
-    const sendChatMessage = (messageText: string) => {
+    const sendChatMessage = useCallback((messageText: string) => {
         channel.publish({ name: `chat`, data: { author: props.playerName, id: props.playerName, text: messageText, area: props.area } });
         setMessageText('');
-        if (inputBox) {
-            inputBox.focus();
+        if (inputBox?.current) {
+            inputBox.current.focus();
         }
-    }
+    }, [channel, inputBox, props.playerName, props.area])
 
-    const handleFormSubmission = (event: React.FormEvent<HTMLElement>) => {
+    const handleFormSubmission = useCallback((event: React.FormEvent<HTMLElement>) => {
         event.preventDefault();
         sendChatMessage(messageText);
-    }
+    }, [messageText, sendChatMessage])
 
-    const handleKeyPress = (event: React.KeyboardEvent) => {
+    const handleKeyPress = useCallback((event: React.KeyboardEvent) => {
         if (event.code !== 'Enter' || messageText.trim().length === 0) {
             return;
         }
         sendChatMessage(messageText);
         event.preventDefault();
-    }
+    }, [messageText, sendChatMessage])
 
     useEffect(() => {
         channel.publish({
@@ -82,7 +80,7 @@ const GlobalChatComponent = (props: ChatComponentProps) => {
                 extra: { solved: game.solved }
             }
         });
-    }, [props.area]);
+    }, [props.area, channel, props.playerName, game.solved]);
 
     return (
         <div className={`absolute bottom-0 right-0 border border-white/30 w-[280px] z-50 ${baloo.className}`}>
@@ -102,7 +100,7 @@ const GlobalChatComponent = (props: ChatComponentProps) => {
             </div>
             <form onSubmit={handleFormSubmission} className="p-1 border-t border-t-white bg-[--theme-5] flex w-full">
                 <textarea
-                    ref={(element) => { inputBox = element; }}
+                    ref={inputBox}
                     value={messageText}
                     placeholder="Chat to the team..."
                     onChange={e => setMessageText(e.target.value)}

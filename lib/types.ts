@@ -18,7 +18,7 @@ export type ReduxState = {
     }
 }
 
-export type PlayerLoc = { [key: string]: { [name: string]: { display: string, name: string } }
+export type PlayerLoc = { [key: string]: { [name: string]: { display: string, name: string } } }
 
 export type ChatData = {
     author?: string,

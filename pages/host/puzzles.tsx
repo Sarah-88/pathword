@@ -1,4 +1,5 @@
 import { Baloo_2, Luckiest_Guy, Macondo } from 'next/font/google'
+import Head from 'next/head';
 import { useState } from 'react'
 
 const baloo = Baloo_2({ subsets: ['latin'] })
@@ -25,6 +26,10 @@ export default function Puzzle() {
     }
     return (
         <>
+            <Head>
+                <title>Pathword - Create Puzzle</title>
+                <meta name="description" content="Enter the correct password game" />
+            </Head>
             <form action="" method="POST" className={baloo.className}>
                 <h1 className={`text-center text-6xl mt-12 ${lucky.className}`}>Create Puzzle</h1>
                 <div className="grid mt-12 max-w-xl grid-cols-[1fr_2fr] gap-3 m-auto items-center">
@@ -70,7 +75,6 @@ export default function Puzzle() {
                             const reader = new FileReader()
                             reader.addEventListener('load', () => {
                                 setImage(reader.result as string)
-                                console.log(reader.result)
                             }, false)
                             if (e.target.files?.length === 1) {
                                 reader.readAsDataURL(e.target.files[0])
@@ -101,7 +105,6 @@ export default function Puzzle() {
                         })
                             .then(response => response.json())
                             .then(resp => {
-                                console.log(resp);
                                 setProcessing(false);
                             })
                     }}>Create</button>

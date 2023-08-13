@@ -1,5 +1,5 @@
 import { Baloo_2, Luckiest_Guy, Macondo } from 'next/font/google'
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ReduxState } from '../lib/types';
 import { useDispatch, useSelector } from 'react-redux'
 import { setGameProgress, setPuzzles } from '../redux/reducers/gameSlice';
@@ -18,13 +18,14 @@ const macondo = Macondo({ weight: "400", subsets: ['latin'] });
 const PathLobby = (props: LobbyType) => {
     const dispatch = useDispatch()
     const game = useSelector((state: ReduxState) => state.game)
-    const difficulty = ['easy', 'normal', 'hard']
+    const difficulty = useMemo(() => ['easy', 'normal', 'hard'], [])
     const [paths, setPaths] = useState<string[]>([])
     const [hints, setHints] = useState<{ [key: string]: Array<string> }>({})
+    const { gameId, isReady, backToHome } = props
 
     useEffect(() => {
-        if (props.gameId && game.team && paths.length === 0) {
-            fetch('/api/game/' + props.gameId, { body: JSON.stringify({ room: 'paths', team: game.team }), method: 'POST' })
+        if (gameId && game.team && paths.length === 0) {
+            fetch('/api/game/' + gameId, { body: JSON.stringify({ room: 'paths', team: game.team }), method: 'POST' })
                 .then(response => response.json())
                 .then((resp) => {
                     if (resp?.data?.branchReturn) {
@@ -32,16 +33,16 @@ const PathLobby = (props: LobbyType) => {
                         setHints(resp.data.hints)
                         dispatch(setPuzzles(resp.data.branchReturn))
                     } else {
-                        props.backToHome()
+                        backToHome()
                     }
                 }).catch((e) => {
                     console.log(e)
-                    props.backToHome()
+                    backToHome()
                 }).finally(() => {
-                    props.isReady(true)
+                    isReady(true)
                 })
         }
-    }, [props.gameId]);
+    }, [gameId, game.team, paths, setPaths, setHints, dispatch, backToHome, isReady, difficulty]);
 
     return (
         <div className="text-center">

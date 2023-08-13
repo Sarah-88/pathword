@@ -63,6 +63,19 @@ export default async function handler(
         }
         res.status(200).json({ message: 'Game Ended!', data: { end: true } })
         return
+    } else if (reqBody.removePlayer) {
+        const result = await db.collection('players').deleteOne({ playerId: reqBody.removePlayer, gameId: req.query.id })
+        const ablyClient = new Ably.Realtime(process.env.ABLY_API_KEY!);
+        const channel = ablyClient.channels.get(`lobby-${req.query.id}`);
+        await channel.publish({
+            name: "leave-room", data: {
+                id: reqBody.removePlayer,
+                display: `${reqBody.playerName} has left the lobby`,
+                player: reqBody.playerName,
+            }
+        });
+        res.status(200).json({ message: 'Updated game', data: { success: result.deletedCount === 1 } })
+        return
     }
 
     const playerQuery = db.collection<Player>('players').find({ gameId: req.query.id })

@@ -50,10 +50,8 @@ const gameSlice = createSlice({
         },
         addSolved: (state, action) => {
             if (state.solved) {
-                console.log('exist solved', state.solved)
                 state.solved = { ...state.solved, ...action.payload }
             } else {
-                console.log('not exist solved', action.payload)
                 state.solved = action.payload
             }
         },

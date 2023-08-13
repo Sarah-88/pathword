@@ -22,7 +22,7 @@ export default async function handler(
     const db = client.db("pathword");
     const reqBody = JSON.parse(req.body);
     if (reqBody.playerName && !reqBody.playerId && reqBody.gameId) {
-        const player = await db.collection<Player>("players").findOne({ playerName: { $regex: reqBody.playerName, $options: 'i' }, gameId: reqBody.gameId });
+        const player = await db.collection<Player>("players").findOne({ playerName: { $regex: '^' + reqBody.playerName + '$', $options: 'i' }, gameId: reqBody.gameId });
         if (player) {
             res.status(400).send({ message: 'This player name already exists' })
             return
@@ -42,12 +42,6 @@ export default async function handler(
     let result
     if (leave) {
         result = await db.collection("players").deleteOne({ playerId: requestBody.playerId, gameId: reqBody.gameId })
-        await channel.publish({
-            name: "leave-room", data: {
-                display: `${player?.playerName} has left the lobby`,
-                player: player?.playerName,
-            }
-        });
     } else {
         result = await db.collection("players").updateOne({ playerId: requestBody.playerId, gameId: reqBody.gameId }, { $set: requestBody }, { upsert: true })
         if (reqBody.playerId && reqBody.team) {

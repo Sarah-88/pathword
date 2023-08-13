@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogObject, getDialog, getRandom, letterList } from '../lib/utils';
 import { DialogProps, ReduxState } from '../lib/types';
 import Dialog from './Dialog';
@@ -20,14 +20,15 @@ const FinalArea = (props: FinalAreaType) => {
     const [textDisplay, setTextDisplay] = useState('')
     const bg = useMemo(() => getRandom(1, 2), [])
     const [dialog, setDialog] = useState<{ text: string, buttons: DialogProps['buttons'] }>()
+    const { gameId, isReady, backToHome, showSpinner } = props
 
-    const formatButtons = (buttons: DialogObject['buttons'], extraParams?: { [key: string]: string }) => {
+    const formatButtons = useCallback((buttons: DialogObject['buttons'], extraParams?: { [key: string]: string }) => {
         return buttons.map((b) => {
             let toReturn: { text: string, reqInput?: number, callback: (val?: string) => void } = { text: b.text, callback: () => { } }
             switch (b.type) {
                 case 'back':
                     toReturn['callback'] = () => {
-                        props.isReady(false)
+                        isReady(false)
                         setTimeout(() => {
                             dispatch(setGameProgress({ stage: 'pathway' }))
                         }, 500)
@@ -40,7 +41,7 @@ const FinalArea = (props: FinalAreaType) => {
                     break
                 case 'finish':
                     toReturn['callback'] = () => {
-                        props.isReady(false)
+                        isReady(false)
                         setTimeout(() => {
                             dispatch(setGameProgress({ stage: 'results' }))
                         }, 500)
@@ -52,28 +53,28 @@ const FinalArea = (props: FinalAreaType) => {
                 case 'submit':
                     toReturn['reqInput'] = extraParams?.display.length
                     toReturn['callback'] = async (val?: string) => {
-                        props.showSpinner(true)
-                        await fetch('/api/game/' + props.gameId, { method: 'POST', body: JSON.stringify({ password: val, room: 'checkPassword', team: game.team, playerName: player.name, playerId: player.id }) })
+                        showSpinner(true)
+                        await fetch('/api/game/' + gameId, { method: 'POST', body: JSON.stringify({ password: val, room: 'checkPassword', team: game.team, playerName: player.name, playerId: player.id }) })
                             .then(response => response.json())
                             .then(resp => {
                                 if (resp.data.success) {
                                     const dl = getDialog('endGame')
-                                    setDialog({
-                                        ...dialog,
+                                    setDialog((state) => ({
+                                        ...state,
                                         text: dl.text,
                                         buttons: formatButtons(dl.buttons)
-                                    })
+                                    }))
                                 } else {
                                     const dl = getDialog('failGame')
-                                    setDialog({
-                                        ...dialog,
+                                    setDialog((state) => ({
+                                        ...state,
                                         text: dl.text,
                                         buttons: formatButtons(dl.buttons)
-                                    })
+                                    }))
                                     dispatch(setFailed())
                                 }
                             }).finally(() => {
-                                props.showSpinner(false)
+                                showSpinner(false)
                                 setOpenPuzzle(false)
                             })
                     }
@@ -81,40 +82,39 @@ const FinalArea = (props: FinalAreaType) => {
             }
             return toReturn
         })
-    }
+    }, [dispatch, showSpinner, gameId, game.team, player, isReady])
 
     useEffect(() => {
         if (game.failed) {
             const dl = getDialog('alreadyFail')
             setDialog({
-                ...dialog,
                 text: dl.text,
                 buttons: formatButtons(dl.buttons)
             })
-            props.isReady(true)
+            isReady(true)
         } else {
             const dl = getDialog('finalPassword')
             setDialog({
                 text: dl.text,
                 buttons: formatButtons(dl.buttons)
             })
-            fetch('/api/game/' + props.gameId, { body: JSON.stringify({ room: 'password', team: game.team }), method: 'POST' })
+            fetch('/api/game/' + gameId, { body: JSON.stringify({ room: 'password', team: game.team }), method: 'POST' })
                 .then(response => response.json())
                 .then(resp => {
                     if (resp.data.display) {
                         dispatch(setClues(resp.data.clues))
                         setTextDisplay(resp.data.display)
                     } else {
-                        props.backToHome()
+                        backToHome()
                     }
                 }).catch(e => {
                     console.log(e)
-                    props.backToHome()
+                    backToHome()
                 }).finally(() => {
-                    props.isReady(true)
+                    isReady(true)
                 })
         }
-    }, []);
+    }, [isReady, backToHome, game.failed, gameId, formatButtons, dispatch, game.team]);
 
     return (
         <div className="text-center">

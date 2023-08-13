@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import Dialog from '../../components/Dialog'
 import { useRouter } from 'next/router'
 import { DialogProps } from '../../lib/types'
+import Head from 'next/head'
 
 export const difficulty = ['easy', 'normal', 'hard'] as const
 type BranchType = { enabled: boolean, clues: string[], maxPath: number, minPath: number }
@@ -43,6 +44,10 @@ export default function Game() {
 
     return (
         <>
+            <Head>
+                <title>Pathword - Create Game</title>
+                <meta name="description" content="Enter the correct password game" />
+            </Head>
             <div className={`${baloo.className} pb-5`}>
                 <h1 className={`text-center text-4xl mt-12 ${lucky.className}`}>Create Game</h1>
                 <div className="grid mt-12 max-w-xl grid-cols-[1fr_2fr] gap-3 m-auto items-start">
@@ -124,7 +129,6 @@ export default function Game() {
                         })
                             .then(response => response.json())
                             .then(resp => {
-                                console.log(resp);
                                 if (resp.data.success) {
                                     navigator.clipboard.writeText(resp.data.gameId)
                                     setDialog({
