@@ -111,9 +111,9 @@ const dialogList = {
     },
     othersEnd: {
         text: [
-            "The door has been opened! Time to view the scores!"
+            "The door has been opened! The portal warms up, and will take you to the next screen in 10 seconds..."
         ],
-        buttons: [buttonList.finish]
+        buttons: []
     }
 }
 export type DialogObject = {
