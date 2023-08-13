@@ -27,21 +27,21 @@ export default function HowToPlay() {
                         </li>
                         <li>When all players have joined teams, the game host will start the game.</li>
                         <li>Each player will be given a choice of which path to choose. The harder the path, the harder the puzzle. You should discuss amongst your team on which team member should take which path.
-                            <div className="text-center"><img width="1031" height="590" src="https://www.dropbox.com/scl/fi/8a4f0fythfvbclvwpkjdi/Gameplay1.png?rlkey=f2keq5ut90n57o2nozgismwu7&dl=0" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
+                            <div className="text-center"><img width="1031" height="590" src="https://www.dropbox.com/scl/fi/slygm6fotjowg0r0bgh4s/Gameplay2.png?rlkey=jtwwe6b33qqphmhzq8gjin4pa&dl=1" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
                         </li>
                         <li>Taking multiple paths simultaneously in your team is the most efficient way to win!</li>
                         <li>Don&apos;t worry if you get stuck on a path, there is always an option to go back and take a different path.</li>
                         <li>Each stage in the path contains a puzzle. It may or may not contain a clue; these clues are needed to help you solve the final password. You may guess the answer to the puzzle as many times as it takes.
-                            <div className="text-center"><img width="861" height="399" src="https://www.dropbox.com/scl/fi/fz2vm79w57zlrbth77sgt/Gameplay3.png?rlkey=r82ck7dehaf9dno4os4ezzr6w&dl=0" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
+                            <div className="text-center"><img width="861" height="399" src="https://www.dropbox.com/scl/fi/fz2vm79w57zlrbth77sgt/Gameplay3.png?rlkey=r82ck7dehaf9dno4os4ezzr6w&dl=1" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
                         </li>
                         <li>Some puzzles require you to solve them before you can advance further.</li>
                         <li>Once any team member solves a particular puzzle, that pathway is then cleared.</li>
                         <li>At the end of the pathway, you will reach a door that requires a password. All the clues you collected so far would be helpful in guessing the password!
-                            <div className="text-center"><img width="1137" height="650" src="https://www.dropbox.com/scl/fi/3lqdnki88fp00i4nzlde8/Gameplay4.png?rlkey=mcbw9nlqdompd7srhzl7vub20&dl=0" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
+                            <div className="text-center"><img width="1137" height="650" src="https://www.dropbox.com/scl/fi/3lqdnki88fp00i4nzlde8/Gameplay4.png?rlkey=mcbw9nlqdompd7srhzl7vub20&dl=1" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
                         </li>
                         <li>Unlike the other puzzles, however, each team member is given only <strong className="text-bold">one</strong> chance at guessing the password.</li>
                         <li>Guessing the correct password ends the game. All players will be brought to the results screen shortly after.
-                            <div className="text-center"><img width="819" height="332" src="https://www.dropbox.com/scl/fi/pudh2pkdkwu6uwwpv7kwf/Gameplay5.png?rlkey=l491z62qd2btjjpqy3r9nu27l&dl=0" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
+                            <div className="text-center"><img width="819" height="332" src="https://www.dropbox.com/scl/fi/pudh2pkdkwu6uwwpv7kwf/Gameplay5.png?rlkey=l491z62qd2btjjpqy3r9nu27l&dl=1" alt="GamePlay1" className="max-w-full inline-block border border-gray-600 shadow-lg" /></div>
                         </li>
                         <li>The winning team is the one who scored the most points. Points are calculated accordingly to the puzzles solved and their difficulty. Specifically:
                             <ul className="list-inside list-disc">
