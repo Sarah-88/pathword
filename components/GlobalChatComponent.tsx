@@ -80,7 +80,7 @@ const GlobalChatComponent = (props: ChatComponentProps) => {
                 extra: { solved: game.solved }
             }
         });
-    }, [props.area, channel, props.playerName, game.solved]);
+    }, [props.area, channel, props.playerName]);
 
     return (
         <div className={`absolute bottom-0 right-0 border border-white/30 w-[280px] z-50 ${baloo.className}`}>
