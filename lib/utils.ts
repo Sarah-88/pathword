@@ -73,7 +73,7 @@ const dialogList = {
         text: [
             "You've correctly guessed the answer! The puzzle fades away and leaves behind a clue, which you record for later.",
             "You've solved the puzzle! Behind it is a clue, which you keep for later.",
-            "You here a 'DING' sound and immediately check for a phone you don't have. Turns out you've correctly solved the puzzle, and you grab the clue it leaves behind."
+            "You hear a 'DING' sound and immediately check for a phone you don't have. Turns out you've correctly solved the puzzle, and you grab the clue it leaves behind."
         ],
         buttons: [buttonList.skip]
     },
@@ -93,9 +93,9 @@ const dialogList = {
     },
     endGame: {
         text: [
-            "You've finished the game! Time to tally the scores!"
+            "You've finished the game and opened the door! The portal warms up, and will take you to the next screen in 10 seconds..."
         ],
-        buttons: [buttonList.finish]
+        buttons: []
     },
     failGame: {
         text: [
