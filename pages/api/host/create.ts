@@ -33,13 +33,17 @@ export default async function handler(
     })
     let puzzleList: { [key: string]: PuzzleType[] } = {}
     const difficulty = Object.keys(puzzleCount)
-    for (const [k, v] of Object.entries(puzzleCount)) {
+    for (let [k, v] of Object.entries(puzzleCount)) {
+        //last item
+        if (k === difficulty[difficulty.length - 1]) {
+            reqBody.branches[k].clues.push('numlet')
+            if (v < reqBody.branches[k].clues.length) {
+                puzzleCount[k]++
+                v++
+            }
+        }
         const query = db.collection('puzzles').aggregate([{ $match: { difficulty: k } }, { $sample: { size: v * 3 } }])
         puzzleList[k] = await query.toArray() as PuzzleType[]
-        //last item
-        if (difficulty[difficulty.length - 1] === k) {
-            reqBody.branches[k].clues.push('numlet')
-        }
     }
 
     const modifier: { [key: string]: number } = {
