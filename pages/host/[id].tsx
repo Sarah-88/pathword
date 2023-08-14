@@ -134,13 +134,14 @@ const HostView = () => {
                 <meta name="description" content="Enter the correct password game" />
             </Head>
             <main>
-                {screenType === 'lobby' && <HostLobby gameId={router.query.id as string} removePlayer={removePlayer} isReady={setIsReady} showSpinner={setShowSpinner} startGame={startGame} list={listData!} />}
+                {screenType === 'lobby' && <HostLobby key="lobby" gameId={router.query.id as string} removePlayer={removePlayer} isReady={setIsReady} showSpinner={setShowSpinner} startGame={startGame} list={listData!} />}
                 {screenType === 'paths' && <>
                     <h1 className={`${lucky.className} text-2xl mt-3 mb-6 text-center`}>Game #{router.query.id} Progress</h1>
                     <div className="flex gap-3 max-w-7xl m-auto justify-center">
                         {Object.entries(playerLoc).map(([t, p], idx) =>
                             <div key={`HostProgress-${idx}`} className="grow max-w-[50%]"><HostProgress setEnd={() => {
                                 setIsReady(false)
+                                fetchData(router.query.id as string, password)
                                 setTimeout(() => {
                                     setScreenType('results')
                                 }, 500)
@@ -151,7 +152,7 @@ const HostView = () => {
                         <button type="button" className={`text-lg bg-[--theme-2] p-2 pl-4 pr-4 mt-8 text-black rounded ${lucky.className}`} onClick={() => endGame()}>End Game</button>
                     </div>
                 </>}
-                {screenType === 'results' && <HostLobby gameId={router.query.id as string} isReady={setIsReady} showSpinner={setShowSpinner} winner={winner} list={listData!} />}
+                {screenType === 'results' && <HostLobby key="results" gameId={router.query.id as string} isReady={setIsReady} showSpinner={setShowSpinner} winner={winner} list={listData!} />}
                 <div className={`transition-all duration-500 fixed top-0 left-0 w-screen h-screen z-50 ${!isReady ? 'bg-black' : 'pointer-events-none'}`}></div>
             </main>
             <Dialog {...dialog} />
