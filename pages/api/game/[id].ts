@@ -35,6 +35,9 @@ export default async function handler(
         } else if (game.endAt && reqBody.room !== 'results') {
             res.status(400).send({ message: 'This game has ended' })
             return
+        } else if (game.startAt && reqBody.room === 'room') {
+            res.status(400).send({ message: 'This game has already started' })
+            return
         }
 
         switch (reqBody.room) {
