@@ -131,7 +131,7 @@ export default function Home() {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
             </Head>
             <main className={baloo.className}>
-                <h1 className={`text-center text-6xl mt-12 ${lucky.className}`}>Pathword</h1>
+                <h1 className={`text-center text-5xl mt-12 ${lucky.className}`}>Pathword</h1>
                 <div className="flex items-center justify-center mt-12">
                     <div className="rounded-lg bg-yellow-50 p-5 shadow-box text-center">
                         <h2 className={`text-black ${macondo.className} text-2xl text-[--theme-5]`}>Enter Game ID</h2>

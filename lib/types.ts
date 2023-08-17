@@ -4,7 +4,7 @@ export type APIResponse = {
 }
 export type PlayerInfo = { id: string, name?: string }
 export type ReduxState = {
-    player: { id: string, name: string },
+    player: { id: string, name: string, score: number },
     game: {
         gameId: string,
         team: string,
@@ -14,6 +14,7 @@ export type ReduxState = {
         progress: number,
         failed: boolean,
         clues: string[],
+        hint?: { [key: string]: { disabled: string[], revealed: { [key: string]: string } } },
         solved?: { [key: string]: string }
     }
 }
@@ -41,6 +42,7 @@ export type DialogProps = {
     subText?: string;
     getClues?: boolean;
     availableLetters?: string[];
+    hintLetters?: { disabled: string[], revealed: { [key: string]: string } };
     imageDisplay?: string;
     buttons?: {
         text: string;

@@ -21,13 +21,13 @@ const Dialog = (props: DialogProps) => {
         }
     }, [props.inputPrep])
     return (
-        <div className={`fixed w-screen h-screen flex justify-center items-center z-40 top-0 left-0 transition-all ${props.visible ? (props.backdropType === 'blur' ? 'backdrop-blur' : props.backdropType === 'black' ? 'bg-black/70' : '') : 'pointer-events-none'}`}>
-            <div className={`relative ${props.large ? 'w-full max-w-3xl' : 'min-w-[320px] max-w-lg'} shadow-box p-3 rounded-lg bg-yellow-50 text-center pb-12 transition-all ${props.visible ? 'top-0 opacity-100' : '-top-10 opacity-0 pointer-events-none'}`}>
+        <div className={`absolute w-screen h-[calc(100vh-32px)] flex justify-center items-center z-40 top-8 left-0 transition-all ${props.visible ? (props.backdropType === 'blur' ? 'backdrop-blur' : props.backdropType === 'black' ? 'bg-black/70' : '') : 'pointer-events-none'}`}>
+            <div className={`relative -mt-8 ${props.large ? 'w-full max-w-3xl' : 'min-w-[320px] max-w-lg'} shadow-box p-3 rounded-lg bg-yellow-50 text-center pb-12 transition-all ${props.visible ? 'top-0 opacity-100' : '-top-10 opacity-0 pointer-events-none'}`}>
                 {props.title && <h3 className={`text-black text-2xl mb-3 ${macondo.className}`}>{props.title}</h3>}
                 {props.imageDisplay && <div className="m-auto mb-3 max-w-xs text-center"><Image onContextMenu={handleContextMenu} src={props.imageDisplay} className="max-w-full" alt="Puzzle Image" /></div>}
                 {props.desc && <p className={`text-black text-xl whitespace-pre-wrap mb-3 select-none ${baloo.className}`}>{props.desc}</p>}
                 {props.subText && <p className={`text-black text-sm mb-3 ${baloo.className}`}>{props.subText}</p>}
-                {props.textDisplay && <Puzzle ref={puzzleRef} clues={props.getClues} setReady={setPuzzleAnswerReady} incorrect={!!props.inputError} textDisplay={props.textDisplay} availableLetters={props.availableLetters as string[]} />}
+                {props.textDisplay && <Puzzle ref={puzzleRef} clues={props.getClues} setReady={setPuzzleAnswerReady} incorrect={!!props.inputError} textDisplay={props.textDisplay} hintLetters={props.hintLetters?.revealed} disabledLetters={props.hintLetters?.disabled} availableLetters={props.availableLetters as string[]} />}
                 {props.input && <>
                     <input type="text" defaultValue={props.inputPrep} onChange={(e) => {
                         setInputVal(e.target.value);

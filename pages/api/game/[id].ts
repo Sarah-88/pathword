@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import clientPromise from "../../../lib/mongodb";
-import { letterList } from '../../../lib/utils';
+import { getRandom, letterList } from '../../../lib/utils';
 import { APIResponse, ChatData, Player } from '../../../lib/types';
 import { Db } from 'mongodb';
 import { GameType, PuzzleType } from '../../../lib/types';
@@ -108,11 +108,48 @@ export default async function handler(
                                 });
                             }
                         }
-                        res.status(200).json({ message: correct ? 'Correct answer!' : 'Incorrect answer!', data: { correct, hasClue: !!currPuzzle.clue } })
+                        res.status(200).json({ message: correct ? 'Correct answer!' : 'Incorrect answer!', data: { correct, hasClue: !!currPuzzle.clue, score: points[k2 as keyof typeof points] } })
                         return
                     }
                 }
 
+                res.status(400).send({ message: 'No such puzzle' })
+                break
+            case 'getHint':
+                const currPuzzle = game.branches[reqBody.team][reqBody.path][reqBody.progress - 1]
+                if (currPuzzle && currPuzzle.display && reqBody.playerId) {
+                    const letters = (currPuzzle.display.match(/_/g) || []).length - (reqBody.exist ? Object.keys(reqBody.exist).filter(a => a).length : 0)
+                    if (letters === 0) {
+                        res.status(400).send({ message: 'All hints have been given' })
+                    }
+                    const randomIdx = getRandom(0, letters - 1)
+                    let revealedLetter = ''
+                    let counter = 0
+                    let oriCounter = 0
+                    let letterIndex = ''
+                    const newWord = currPuzzle.display.split(' ').map((wd, i) => {
+                        const tmp = wd.split('').map((cd, idx) => {
+                            oriCounter++
+                            if (reqBody.exist[`${i}-${idx}`]) {
+                                return reqBody.exist[`${i}-${idx}`]
+                            } else if (cd === '_') {
+                                counter++
+                            }
+                            if (randomIdx === counter - 1 && cd === '_') {
+                                letterIndex = `${i}-${idx}`
+                                revealedLetter = currPuzzle.answer[oriCounter - 1].toUpperCase()
+                                return revealedLetter
+                            }
+                            return cd
+                        })
+                        oriCounter++
+                        return tmp.join('')
+                    }).join(' ')
+                    const disableLetter = (newWord.match(new RegExp(revealedLetter, 'g')) || []).length >= (currPuzzle.answer.match(new RegExp(revealedLetter, 'g')) || []).length ? revealedLetter : ''
+                    await db.collection<Player>('players').updateOne({ gameId: req.query.id, playerId: reqBody.playerId }, { $inc: { score: -1 } })
+                    res.status(200).json({ message: 'Revealed a letter!', data: { newWord: newWord, letterIndex, revealedLetter, disableLetter, score: -1 } })
+                    return
+                }
                 res.status(400).send({ message: 'No such puzzle' })
                 break
             case 'password':
@@ -177,6 +214,7 @@ export default async function handler(
                 break
         }
     } catch (e) {
+        console.log('error', e)
         res.status(400).send({ message: 'Error!', data: e })
     }
 }

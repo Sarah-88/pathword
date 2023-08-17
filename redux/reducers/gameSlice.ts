@@ -7,6 +7,7 @@ const gameInitialState = {
     stage: '',
     progress: 0,
     failed: false,
+    hint: {},
     clues: [] as string[],
     solved: [] as string[]
 }
@@ -58,9 +59,12 @@ const gameSlice = createSlice({
         setSolved: (state, action) => {
             state.solved = action.payload
         },
+        addHint: (state, action) => {
+            state.hint = { ...state.hint, ...action.payload }
+        },
         resetGame: () => gameInitialState
     }
 })
 
-export const { setGameId, setTeam, setGameProgress, setPuzzles, setFailed, resetGame, setClues, addClue, addSolved, setSolved } = gameSlice.actions;
+export const { setGameId, setTeam, setGameProgress, setPuzzles, setFailed, resetGame, setClues, addClue, addSolved, setSolved, addHint } = gameSlice.actions;
 export default gameSlice.reducer;

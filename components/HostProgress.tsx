@@ -100,7 +100,7 @@ const HostProgress = (props: HostProgressProps) => {
                 </ul>
                 <div className="border border-[--theme-3] w-[300px]">
                     <div className="bg-[--theme-5] p-2 border-b border-b-[--theme-2]">Chat Log</div>
-                    <div className="bg-[--theme-3-05] p-2 text-sm overflow-auto min-h-[200px] max-h-[calc(100vh-200px)]">
+                    <div className="bg-[--theme-3-05] p-2 text-sm overflow-auto min-h-[200px] max-h-[calc(100vh-400px)]">
                         {messages.map((msg, i) =>
                             <div key={`msg-${i}`} className="mb-1">
                                 {msg.author && <span className="mr-1">

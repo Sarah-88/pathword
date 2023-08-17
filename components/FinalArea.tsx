@@ -114,7 +114,7 @@ const FinalArea = (props: FinalAreaType) => {
                     isReady(true)
                 })
         }
-    }, [isReady, backToHome, game.failed, gameId, formatButtons, dispatch, game.team]);
+    }, [isReady, backToHome, gameId, formatButtons, dispatch, game.team]);
 
     return (
         <div className="text-center">

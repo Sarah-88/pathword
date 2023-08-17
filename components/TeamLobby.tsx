@@ -65,7 +65,7 @@ const TeamLobby = (props: LobbyProps) => {
         }).finally(() => {
             isReady(true)
         })
-        , [backToHome, isReady, gameId, channel, player.name])
+        , [backToHome, isReady, gameId, channel])
 
     useEffect(() => {
         getPlayers()

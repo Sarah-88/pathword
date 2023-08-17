@@ -8,6 +8,8 @@ type PuzzleProps = {
     availableLetters: string[]
     textDisplay: string,
     incorrect: boolean,
+    hintLetters?: { [key: string]: string },
+    disabledLetters?: string[],
     clues?: boolean,
     setReady?: (ready: boolean) => void
 }
@@ -46,8 +48,13 @@ const findSelected = (toDisplay: string[][]) => {
 }
 
 const PuzzleCom = (props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
-    const [letters, setLetters] = useState(getLetters(props.availableLetters))
-    const toDisplay = useMemo(() => props.textDisplay.split(' ').map(td => td.split('')), [props.textDisplay])
+    const [letters, setLetters] = useState(getLetters(props.availableLetters.filter(a => !(props.disabledLetters ?? []).includes(a))))
+    const toDisplay = useMemo(() => props.textDisplay.split(' ').map((td, idx) => td.split('').map((t, i) => {
+        if (props.hintLetters && props.hintLetters[`${idx}-${i}`]) {
+            return props.hintLetters[`${idx}-${i}`]
+        }
+        return t
+    })), [props.textDisplay, props.hintLetters])
     const [selected, setSelected] = useState(findSelected(toDisplay))
     const [answer, setAnswer] = useState<{ [key: string]: string }>({})
     const [inputAnswer, setInputAnswer] = useState('')
@@ -67,7 +74,7 @@ const PuzzleCom = (props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
             } else {
                 const newState = { ...state, [selected]: letter }
                 const toFill = props.textDisplay.split('').filter(a => a === '_').length
-                const filled = Object.values(newState).length
+                const filled = Object.values(newState).length + Object.keys(props.hintLetters ?? {}).length
                 if (toFill <= filled && props.setReady) {
                     setTimeout(() => {
                         props.setReady && props.setReady(true)
@@ -95,7 +102,7 @@ const PuzzleCom = (props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
             }
             return nextIdx
         })
-    }, [props.setReady, props.textDisplay, selected, toDisplay])
+    }, [props.setReady, props.textDisplay, selected, toDisplay, props.hintLetters])
 
     const typeAnswer = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (props.setReady) {
@@ -128,8 +135,12 @@ const PuzzleCom = (props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
     }, [answer, inputAnswer, props.textDisplay, toDisplay])
 
     useEffect(() => {
-        setLetters(getLetters(props.availableLetters))
-    }, [props.availableLetters])
+        setLetters(getLetters(props.availableLetters.filter(a => !(props.disabledLetters ?? []).includes(a))))
+        if (props.disabledLetters?.length) {
+            const remaining = (props.textDisplay.match(/_/g) || []).length
+            props.setReady && props.setReady(remaining - Object.values(props.hintLetters ?? {}).length <= 0)
+        }
+    }, [props.availableLetters, props.disabledLetters, props.textDisplay, props.hintLetters])
 
     useEffect(() => {
         setSelected(findSelected(toDisplay))
@@ -152,7 +163,6 @@ const PuzzleCom = (props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
 
         return () => document.removeEventListener('keyup', keyChange)
     })
-
     return <>
         <div className="pl-7 pr-7">
             {toDisplay.map((td, ti) => (
@@ -166,7 +176,7 @@ const PuzzleCom = (props: PuzzleProps, ref: ForwardedRef<PuzzleRef>) => {
                                     ? <button type="button" className={`w-full h-full outline-none ${props.incorrect ? 'text-red-600' : ''}`} onClick={() => {
                                         setSelected(`${ti}-${i}`)
                                     }}>{answer[`${ti}-${i}`]}</button>
-                                    : l.toUpperCase()
+                                    : <span className={props.hintLetters && props.hintLetters[`${ti}-${i}`] ? "text-green-700" : ""}>{l.toUpperCase()}</span>
                                 }
                             </div>
                         )}
