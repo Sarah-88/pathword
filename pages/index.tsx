@@ -133,16 +133,22 @@ export default function Home() {
             <main className={baloo.className}>
                 <h1 className={`text-center text-5xl mt-12 ${lucky.className}`}>Pathword</h1>
                 <div className="flex items-center justify-center mt-12">
-                    <div className="rounded-lg bg-yellow-50 p-5 shadow-box text-center">
+                    <div className="rounded-lg bg-yellow-50 p-5 pb-2 shadow-box text-center">
                         <h2 className={`text-black ${macondo.className} text-2xl text-[--theme-5]`}>Enter Game ID</h2>
                         <input type="text" className="p-2 text-black rounded border uppercase border-[--theme-1] outline-none mt-2 bg-white" onChange={(e) => setGameId(e.target.value.toUpperCase())} />
                         <div className="mt-5">
                             <button type="button" className={`text-black text-xl p-2 bg-[--theme-2] rounded-md pl-6 pr-6 ${lucky.className} hover:shadow-md`} onClick={checkGame}>JOIN!</button>
                         </div>
+                        <Link href={'/how-to-play'} className="text-black underline text-lg mt-3 block">How to play?</Link>
                     </div>
                 </div>
+                <div className="flex m-auto mt-12 max-w-xs justify-stretch items-center">
+                    <div className="border-[--theme-2] border-t flex-1"></div>
+                    <span className={`${macondo.className} text-lg px-3`}>OR</span>
+                    <div className="border-[--theme-2] border-t flex-1"></div>
+                </div>
                 <div className="mt-12 text-center">
-                    <Link href={'/how-to-play'} className="text-[--theme-2] text-lg">How to play?</Link>
+                    <Link href={'/host'} className={`text-black text-xl p-2 bg-[--theme-2] rounded-md pl-6 pr-6 ${lucky.className} hover:shadow-md`}>Host a game</Link>
                 </div>
                 <Dialog {...showDialog} />
                 <Spinner show={isLoading} backdropType="black" />
